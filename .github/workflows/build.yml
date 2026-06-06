@@ -14,9 +14,14 @@ jobs:
 
       - name: Build with Xcode
         run: |
+          # Automatically find the exact name of the Xcode project
+          PROJECT_FILE=$(find . -name "*.xcodeproj" | head -n 1)
+          
+          echo "Found project file: $PROJECT_FILE"
+          
           # Build all targets while explicitly disabling code signing
           xcodebuild clean build \
-            -project SponsorBlockSafari.xcodeproj \
+            -project "$PROJECT_FILE" \
             -alltargets \
             -configuration Release \
             CODE_SIGN_IDENTITY="-" \
