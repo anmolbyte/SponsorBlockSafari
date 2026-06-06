@@ -1,0 +1,37 @@
+name: Build Safari Extension
+
+on:
+  workflow_dispatch: # Allows you to manually trigger the build
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive # Crucial: pulls in the actual extension code
+
+      - name: Build with Xcode
+        run: |
+          # Build all targets while explicitly disabling code signing
+          xcodebuild clean build \
+            -project SponsorBlockSafari.xcodeproj \
+            -alltargets \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            SYMROOT=$(PWD)/build
+
+      - name: Zip the Application
+        run: |
+          cd build/Release
+          # Zipping preserves the macOS app bundle structure and permissions
+          zip -r SponsorBlockSafari.zip *.app
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SponsorBlock-Safari-App
+          path: build/Release/SponsorBlockSafari.zip
